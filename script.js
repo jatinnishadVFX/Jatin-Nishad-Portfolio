@@ -3,19 +3,20 @@ const context = canvas.getContext('2d');
 
 const frameCount = 240; 
 const currentFrame = index => `Man standing/Man_standing_${index.toString().padStart(5, '0')}.jpg`;
+const isSmallScreen = window.matchMedia('(max-width: 640px)').matches;
+const frameIndexes = isSmallScreen ? [0] : Array.from({ length: frameCount }, (_, index) => index);
 
 const images = [];
-let imagesLoaded = 0;
 
-// Preload all frames
-for (let i = 0; i < frameCount; i++) {
+// Keep the animated background static on small screens to avoid downloading
+// 240 large image frames over a mobile connection.
+for (const frameIndex of frameIndexes) {
     const img = new Image();
-    img.src = currentFrame(i);
+    img.src = currentFrame(frameIndex);
     images.push(img);
     
     img.onload = () => {
-        imagesLoaded++;
-        if (i === 0) {
+        if (frameIndex === 0) {
             canvas.width = img.width;
             canvas.height = img.height;
             context.drawImage(img, 0, 0);
@@ -31,8 +32,8 @@ window.addEventListener('scroll', () => {
     const scrollFraction = scrollTop / maxScrollTop;
     
     const frameIndex = Math.min(
-        frameCount - 1,
-        Math.floor(scrollFraction * frameCount)
+        images.length - 1,
+        Math.floor(scrollFraction * images.length)
     );
 
     requestAnimationFrame(() => updateImage(frameIndex));
