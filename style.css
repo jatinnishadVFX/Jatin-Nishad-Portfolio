@@ -683,12 +683,27 @@ p { color: var(--text-muted); line-height: 1.6; font-size: 1.1rem; }
   }
 
   .work-images {
-    grid-template-columns: 1fr;
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: 88%;
     gap: 1rem;
+    overflow-x: auto;
+    padding: 0 0.35rem 0.6rem;
+    margin-inline: -0.35rem;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: 6%;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    overscroll-behavior-inline: contain;
+  }
+
+  .work-images::-webkit-scrollbar {
+    display: none;
   }
 
   .work-img-card {
     aspect-ratio: 16 / 10;
+    scroll-snap-align: center;
   }
 
   .work-more {
