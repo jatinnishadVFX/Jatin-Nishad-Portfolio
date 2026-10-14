@@ -390,6 +390,14 @@ p { color: var(--text-muted); line-height: 1.6; font-size: 1.1rem; }
   top: 0; left: 0; right: 0; bottom: 0;
   background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
 }
+.profile-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
 .img-landscape { aspect-ratio: 16/10; border-radius: 20px; }
 .img-square { aspect-ratio: 1/1; border-radius: 20px; }
 

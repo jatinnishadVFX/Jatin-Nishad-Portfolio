@@ -1,43 +1,50 @@
 const canvas = document.getElementById('animationCanvas');
 const context = canvas.getContext('2d');
 
-const frameCount = 240; 
-const currentFrame = index => `Man standing/Man_standing_${index.toString().padStart(5, '0')}.jpg`;
+const frameCount = 240;
+const currentFrame = index => `Man standing/Man_standing_${index.toString().padStart(5, '0')}.webp`;
 const isSmallScreen = window.matchMedia('(max-width: 640px)').matches;
-const frameIndexes = isSmallScreen ? [0] : Array.from({ length: frameCount }, (_, index) => index);
+const imageCount = isSmallScreen ? 1 : frameCount;
+const images = Array(imageCount).fill(null);
+let currentFrameIndex = 0;
 
-const images = [];
+function loadFrame(index) {
+    if (index < 0 || index >= imageCount || images[index]) return;
 
-// Keep the animated background static on small screens to avoid downloading
-// 240 large image frames over a mobile connection.
-for (const frameIndex of frameIndexes) {
     const img = new Image();
-    img.src = currentFrame(frameIndex);
-    images.push(img);
-    
+    img.decoding = 'async';
+    images[index] = img;
+
     img.onload = () => {
-        if (frameIndex === 0) {
-            canvas.width = img.width;
-            canvas.height = img.height;
-            context.drawImage(img, 0, 0);
-        }
+        if (index === currentFrameIndex) updateImage(index);
     };
+
+    img.src = currentFrame(index);
 }
 
-// Update the frame based on scroll
-window.addEventListener('scroll', () => {
+function preloadFramesNear(index) {
+    if (isSmallScreen) return;
+
+    // Fetch only nearby frames; scrolling farther loads the next small batch.
+    for (let offset = -3; offset <= 8; offset++) {
+        loadFrame(index + offset);
+    }
+}
+
+function renderFrameForScroll() {
     const scrollTop = document.documentElement.scrollTop;
     const maxScrollTop = document.documentElement.scrollHeight - window.innerHeight;
-    
-    const scrollFraction = scrollTop / maxScrollTop;
-    
-    const frameIndex = Math.min(
-        images.length - 1,
-        Math.floor(scrollFraction * images.length)
-    );
+    const scrollFraction = maxScrollTop > 0 ? scrollTop / maxScrollTop : 0;
+    currentFrameIndex = Math.min(imageCount - 1, Math.floor(scrollFraction * imageCount));
 
-    requestAnimationFrame(() => updateImage(frameIndex));
-});
+    preloadFramesNear(currentFrameIndex);
+    updateImage(currentFrameIndex);
+}
+
+// Keep the background static on phones; desktop loads the sequence on demand.
+loadFrame(0);
+preloadFramesNear(0);
+window.addEventListener('scroll', renderFrameForScroll, { passive: true });
 
 function updateImage(index) {
     const img = images[index];
