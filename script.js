@@ -3,8 +3,7 @@ const context = canvas.getContext('2d');
 
 const frameCount = 240;
 const currentFrame = index => `Man standing/Man_standing_${index.toString().padStart(5, '0')}.webp`;
-const isSmallScreen = window.matchMedia('(max-width: 640px)').matches;
-const imageCount = isSmallScreen ? 1 : frameCount;
+const imageCount = frameCount;
 const images = Array(imageCount).fill(null);
 let currentFrameIndex = 0;
 
@@ -23,9 +22,7 @@ function loadFrame(index) {
 }
 
 function preloadFramesNear(index) {
-    if (isSmallScreen) return;
-
-    // Fetch only nearby frames; scrolling farther loads the next small batch.
+    // Fetch only nearby frames on every screen size; scrolling loads the next batch.
     for (let offset = -3; offset <= 8; offset++) {
         loadFrame(index + offset);
     }
@@ -41,10 +38,20 @@ function renderFrameForScroll() {
     updateImage(currentFrameIndex);
 }
 
-// Keep the background static on phones; desktop loads the sequence on demand.
+// Load the same scroll-driven animation on desktop and mobile.
 loadFrame(0);
 preloadFramesNear(0);
-window.addEventListener('scroll', renderFrameForScroll, { passive: true });
+
+let renderPending = false;
+window.addEventListener('scroll', () => {
+    if (renderPending) return;
+
+    renderPending = true;
+    requestAnimationFrame(() => {
+        renderPending = false;
+        renderFrameForScroll();
+    });
+}, { passive: true });
 
 function updateImage(index) {
     const img = images[index];
